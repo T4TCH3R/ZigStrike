@@ -37,4 +37,6 @@ A Powerfull shellcode loader written in Zig, featuring multiple injection techni
 
 The following article is released for ZigStrike highlighting the features and showcase the capabilities to bypass advanced security solutions. 
 
+https://kpmg.com/nl/en/home/insights/2024/12/zig-strike-the-ultimate-toolkit-for-payload-creation-and-evasion.html
+
 

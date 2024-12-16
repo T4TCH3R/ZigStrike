@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zig Shellcode Compiler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        h1 {
+            text-align: center;
+            color: #fffcfd;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            resize: vertical;
+        }
+        select, button {
+            margin-top: 10px;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px 10px;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #ff00ff;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+        .radio-button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        .radio-button-group input[type="radio"] {
+            display: none;
+        }
+        .radio-button-group label {
+            flex: 1;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            padding: 10px;
+        }
+        .radio-button-group label::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 500px;
+            width: max-content;
+            white-space: pre-line;
+            text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            border: 1px solid #00ff00;
+            z-index: 1000;
+        }
+        .radio-button-group label:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        .radio-button-group input[type="radio"]:checked + label {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        @keyframes glitch {
+            0% {
+                text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff,
+                    0.025em 0.05em 0 #fffc00;
+            }
+            14% {
+                text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff,
+                    0.025em 0.05em 0 #fffc00;
+            }
+            15% {
+                text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff,
+                    -0.05em -0.05em 0 #fffc00;
+            }
+            49% {
+                text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff,
+                    -0.05em -0.05em 0 #fffc00;
+            }
+            50% {
+                text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff,
+                    0 -0.05em 0 #fffc00;
+            }
+            99% {
+                text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff,
+                    0 -0.05em 0 #fffc00;
+            }
+            100% {
+                text-shadow: -0.025em 0 0 #00fffc, -0.025em -0.025em 0 #fc00ff,
+                    -0.025em -0.05em 0 #fffc00;
+            }
+        }
+        h1 {
+            animation: glitch 1s linear infinite;
+        }
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #00ff00;
+            color: #000;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ff00;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-icons a {
+            color: #00ff00;
+            font-size: 24px;
+            transition: color 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: #ff00ff;
+        }
+
+        hr.separator {
+            border: none;
+            height: 1px;
+            background-color: #00ff00;
+            margin: 20px 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .protection-options {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .protection-label {
+            color: #00ff00;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .sub-options {
+            margin-top: 15px;
+            padding-left: 20px;
+            display: none;  /* Hidden by default */
+        }
+
+        .checkbox-group {
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group label:hover {
+            background-color: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .checkbox-group input[type="checkbox"]:checked + label {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .checkbox-group i {
+            margin-right: 10px;
+        }
+
+        .checkbox-group label::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 300px;
+            width: max-content;
+            white-space: pre-line;
+            text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            border: 1px solid #00ff00;
+            z-index: 1000;
+        }
+
+        .checkbox-group label:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        textarea.error {
+    border-color: #ff0000 !important;
+    box-shadow: 0 0 10px #ff0000 !important;
+}
+
+button[type="submit"]:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#notification {
+    z-index: 1000;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.format-controls {
+    margin: 10px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.format-btn {
+    flex: 1;
+    background-color: #000;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.format-btn:hover {
+    background-color: #00ff00;
+    color: #000;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.format-btn i {
+    font-size: 1.1em;
+}
+
+#shellcodeFile {
+    display: none;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.logo {
+    
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #00ff00;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    transition: all 0.3s ease;
+    object-fit: cover;
+    
+}
+
+.process-input {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #00ff00;
+    background-color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.process-input input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    background-color: #000;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    font-family: 'Share Tech Mono', monospace;
+    margin-top: 5px;
+}
+
+.process-input input[type="text"]:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.process-input label {
+    color: #00ff00;
+    display: block;
+    margin-bottom: 5px;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+           
+            <h1> Zig Strike </h1>
+            <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Zig Strike Logo" class="logo">
+        </div>
+        <form id="compileForm">
+            <textarea name="content" placeholder="Paste your shellcode here"></textarea>
+
+                 <!-- Add these buttons after textarea -->
+        <div class="format-controls">
+            <button type="button" id="toggleFormat" class="format-btn">
+                <i class="fas fa-exchange-alt"></i> Manual Input
+            </button>
+            <button type="button" id="uploadShellcode" class="format-btn">
+                <i class="fas fa-file-upload"></i> Upload Raw Shellcode
+            </button>
+            <input type="file" id="shellcodeFile" style="display: none;" accept=".bin,.raw">
+        </div>
+            <br>
+            <label>Select injection method:</label>
+            <div class="radio-button-group">
+                <input type="radio" id="hijack_thread" name="injection_method" value="hijack_thread">
+                <label for="hijack_thread" data-tooltip="Hijack Thread: This technique involves taking control of an existing thread within the target process. It redirects the thread's execution to the injected shellcode. This method is stealthy as it doesn't create new threads, potentially evading some detection mechanisms. However, it may impact the stability of the hijacked thread's original function.">Local Thread</label>
+                
+                <input type="radio" id="local_mapping" name="injection_method" value="local_mapping">
+                <label for="local_mapping" data-tooltip=" 1.Create Mapped Section in Target Process.&#10;
+                2.Copy Shellcode to the mapped section.&#10; 
+                3.Execute the shellcode.">Local Mapping</label>
+                <input type="radio" id="remote_mapping" name="injection_method" value="remote_mapping">
+                <label for="remote_mapping" data-tooltip="1. Create a new process in the target machine.&#10;
+                2. Map the shellcode into the new process's address space.&#10;
+                3. Execute the shellcode in the new process.">Remote Mapping</label>
+                <input type="radio" id="remote_thread" name="injection_method" value="remote_thread">
+                <label for="remote_thread" data-tooltip="1. Create a new process in the target machine.&#10;
+                2. Create a new thread in the new process.&#10;
+                3. Redirect the thread's execution to the shellcode.">Remote Thread</label>
+            </div>
+            
+            <div id="process-input" class="process-input" style="display: none;">
+                <label for="process-name">Target Process Name:</label>
+                <input type="text" id="process-name" name="process_name" placeholder="Enter process name (e.g., notepad.exe)" />
+            </div>
+            
+            <hr class="separator">
+            
+            <div class="protection-options">
+                <input type="checkbox" id="enable_protection" name="enable_protection">
+                <label for="enable_protection" class="protection-label">Enable Sandbox Protection</label>
+                
+                <div class="sub-options" id="protection_choices">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="tpm_check" name="protection_features" value="tpm_check" disabled>
+                        <label for="tpm_check" data-tooltip="TPM Check: Verifies the presence of a Trusted Platform Module (TPM) chip. Most sandboxes and virtual environments lack a TPM, making this an effective anti-sandbox measure.">
+                            <i class="fas fa-microchip"></i> TPM Protection
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="domain_check" name="protection_features" value="domain_check" disabled>
+                        <label for="domain_check" data-tooltip="Domain Check: Verifies if the machine is domain-joined or Azure AD joined. Sandbox environments typically aren't connected to any domain.">
+                            <i class="fas fa-network-wired"></i> Domain Join Check
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="separator">
+            
+            <label for="extension">Select the output format:</label> 
+            <select id="extension" name="extension">
+                <option value="xll">XLL</option>
+                <option value="dll">DLL</option>
+            </select>
+            <br>
+            <hr class="separator">
+            <button type="submit">Compile</button>
+        </form>
+    </div>
+   
+
+    <div id="notification">Compiling...</div>
+
+    <footer>
+        <div class="social-icons">
+            <a href="https://x.com/zux0x3a" target="_blank" data-tooltip="Follow me on X">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://www.buymeacoffee.com/your_profile" target="_blank" title="Support my work">
+                <i class="fas fa-mug-hot"></i>
+            </a>
+        </div>
+    </footer>
+
+    <script>
+
+function validateContent(content) {
+        const invalidChars = ['"', '(', ')', ';'];
+        let foundChars = [];
+        
+        for (let char of invalidChars) {
+            if (content.includes(char)) {
+                foundChars.push(char);
+            }
+        }
+        
+        return foundChars;
+    }
+
+    // Add this event listener for real-time validation
+    document.querySelector('textarea[name="content"]').addEventListener('input', function() {
+        const invalidChars = validateContent(this.value);
+        
+        if (invalidChars.length > 0) {
+            const notification = document.getElementById('notification');
+            notification.style.backgroundColor = '#ff0000';
+            notification.textContent = `Please remove invalid characters: ${invalidChars.join(' ')}`;
+            notification.style.display = 'block';
+            notification.style.opacity = '1';
+            
+            // Disable the submit button
+            document.querySelector('button[type="submit"]').disabled = true;
+            
+            // Add visual indication to textarea
+            this.style.borderColor = '#ff0000';
+            this.style.boxShadow = '0 0 10px #ff0000';
+        } else {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'none';
+            notification.style.opacity = '0';
+            
+            // Re-enable the submit button
+            document.querySelector('button[type="submit"]').disabled = false;
+            
+            // Reset textarea styling
+            this.style.borderColor = '#00ff00';
+            this.style.boxShadow = '0 0 10px #00ff00';
+        }
+    });
+
+    // Modify your existing form submit handler to include validation
+    document.getElementById('compileForm').addEventListener('submit', function(e) {
+        const content = this.querySelector('textarea[name="content"]').value;
+        const invalidChars = validateContent(content);
+        
+        if (invalidChars.length > 0) {
+            e.preventDefault();
+            const notification = document.getElementById('notification');
+            notification.style.backgroundColor = '#ff0000';
+            notification.textContent = `Cannot compile: Please remove invalid characters: ${invalidChars.join(' ')}`;
+            notification.style.display = 'block';
+            notification.style.opacity = '1';
+            return;
+        }
+
+        // ... rest of your existing submit handler code ...
+    });
+
+
+        document.getElementById('compileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show notification
+            var notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            setTimeout(() => { notification.style.opacity = '1'; }, 10);
+
+            // Send AJAX request
+            fetch('/', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Compilation failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Hide notification
+                notification.style.opacity = '0';
+                setTimeout(() => { notification.style.display = 'none'; }, 500);
+
+                // Create download link
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'output.' + document.getElementById('extension').value;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                notification.textContent = 'Compilation failed';
+                notification.style.backgroundColor = '#ff0000';
+                setTimeout(() => { 
+                    notification.style.opacity = '0';
+                    setTimeout(() => { notification.style.display = 'none'; }, 500);
+                }, 3000);
+            });
+        });
+
+        document.getElementById('enable_protection').addEventListener('change', function() {
+            const protectionChoices = document.getElementById('protection_choices');
+            const checkboxes = protectionChoices.querySelectorAll('input[type="checkbox"]');
+            
+            if (this.checked) {
+                protectionChoices.style.display = 'block';
+                checkboxes.forEach(checkbox => checkbox.disabled = false);
+            } else {
+                protectionChoices.style.display = 'none';
+                checkboxes.forEach(checkbox => {
+                    checkbox.disabled = true;
+                    checkbox.checked = false;
+                });
+            }
+        });
+
+        function convertToHexFormat(rawShellcode) {
+            let hexArray = [];
+            for (let i = 0; i < rawShellcode.length; i++) {
+                let hex = rawShellcode.charCodeAt(i).toString(16).padStart(2, '0');
+                hexArray.push('\\x' + hex);
+            }
+            return hexArray.join('');
+        }
+
+        function handleRawShellcodeFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const bytes = new Uint8Array(arrayBuffer);
+                let hexString = '';
+                for (let i = 0; i < bytes.length; i++) {
+                    hexString += '\\x' + bytes[i].toString(16).padStart(2, '0');
+                }
+                document.querySelector('textarea[name="content"]').value = hexString;
+                
+                // Show success notification
+                const notification = document.getElementById('notification');
+                notification.style.backgroundColor = '#00ff00';
+                notification.textContent = 'Shellcode converted successfully!';
+                notification.style.display = 'block';
+                notification.style.opacity = '1';
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => { notification.style.display = 'none'; }, 500);
+                }, 2000);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Toggle format button handler
+        document.getElementById('toggleFormat').addEventListener('click', function() {
+            let textarea = document.querySelector('textarea[name="content"]');
+            let content = textarea.value;
+            
+            if (this.textContent.includes('Manual')) {
+                this.innerHTML = '<i class="fas fa-exchange-alt"></i> Raw Format';
+                textarea.placeholder = "Enter comma-separated shellcode (\\x41\\x42...)";
+            } else {
+                this.innerHTML = '<i class="fas fa-exchange-alt"></i> Manual Input';
+                textarea.placeholder = "Enter raw shellcode";
+            }
+            
+            if (content) {
+                if (content.includes('\\x')) {
+                    // Convert from hex to raw
+                    let raw = content.split('\\x')
+                        .filter(x => x)
+                        .map(x => String.fromCharCode(parseInt(x, 16)))
+                        .join('');
+                    textarea.value = raw;
+                } else {
+                    // Convert to hex
+                    textarea.value = convertToHexFormat(content);
+                }
+            }
+        });
+
+        // Upload button handler
+        document.getElementById('uploadShellcode').addEventListener('click', function() {
+            document.getElementById('shellcodeFile').click();
+        });
+
+        // File input handler
+        document.getElementById('shellcodeFile').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleRawShellcodeFile(e.target.files[0]);
+            }
+        });
+
+        // Add drag and drop support to textarea
+        const textarea = document.querySelector('textarea[name="content"]');
+        textarea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#00ff00';
+            this.style.boxShadow = '0 0 20px #00ff00';
+        });
+
+        textarea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#00ff00';
+            this.style.boxShadow = '0 0 10px #00ff00';
+        });
+
+        textarea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#00ff00';
+            this.style.boxShadow = '0 0 10px #00ff00';
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleRawShellcodeFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        document.querySelectorAll('input[name="injection_method"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const processInput = document.getElementById('process-input');
+                if (this.value === 'remote_mapping' || this.value === 'remote_thread') {
+                    processInput.style.display = 'block';
+                    document.getElementById('process-name').required = true;
+                } else {
+                    processInput.style.display = 'none';
+                    document.getElementById('process-name').required = false;
+                }
+            });
+        });
+
+        document.getElementById('process-name').addEventListener('input', function() {
+            const processName = this.value.trim();
+            if (processName && !processName.match(/^[\w\-. ]+\.exe$/i)) {
+                this.style.borderColor = '#ff0000';
+                this.style.boxShadow = '0 0 10px #ff0000';
+            } else {
+                this.style.borderColor = '#00ff00';
+                this.style.boxShadow = '0 0 10px #00ff00';
+            }
+        });
+    </script>
+</body>
+</html>

