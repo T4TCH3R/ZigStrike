@@ -404,7 +404,7 @@ button[type="submit"]:disabled {
             <label>Select injection method:</label>
             <div class="radio-button-group">
                 <input type="radio" id="hijack_thread" name="injection_method" value="hijack_thread">
-                <label for="hijack_thread" data-tooltip="Hijack Thread: This technique involves taking control of an existing thread within the target process. It redirects the thread's execution to the injected shellcode. This method is stealthy as it doesn't create new threads, potentially evading some detection mechanisms. However, it may impact the stability of the hijacked thread's original function.">Local Thread</label>
+                <label for="hijack_thread" data-tooltip="This technique involves hijacking a created thread, redirecting the payload execution into a dummy function and executing the payload once the thread is resumed. This option also performs function stomping through the dummy function callback which stands for loading specific windows API and stomp it’s function address.">Local Thread</label>
                 
                 <input type="radio" id="local_mapping" name="injection_method" value="local_mapping">
                 <label for="local_mapping" data-tooltip=" 1.Create Mapped Section in Target Process.&#10;
@@ -416,7 +416,7 @@ button[type="submit"]:disabled {
                 3. Execute the shellcode in the new process.">Remote Mapping</label>
                 <input type="radio" id="remote_thread" name="injection_method" value="remote_thread">
                 <label for="remote_thread" data-tooltip="1. Create a new process in the target machine.&#10;
-                2. Create a new thread in the new process.&#10;
+                2. Hijack a thread in the new process.&#10;
                 3. Redirect the thread's execution to the shellcode.">Remote Thread</label>
             </div>
             
