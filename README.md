@@ -44,7 +44,7 @@ https://kpmg.com/nl/en/home/insights/2024/12/zig-strike-the-ultimate-toolkit-for
 
 ```
 git clone https://github.com/0xsp-SRD/ZigStrike/
-cd App/ 
+cd ZigStrike/App/ 
 python3 App.py 
 ```
 
@@ -52,6 +52,7 @@ python3 App.py
 you have problem running it? you can run it via docker. 
 
 ```
+git clone https://github.com/0xsp-SRD/ZigStrike/
 cd ZigStrike/
 
 # Build the image
