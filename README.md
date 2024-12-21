@@ -62,7 +62,9 @@ docker build -t zigstrike .
 docker run -p 5002:5002 zigstrike
 
 ```
-
+## Pending feature 
+* [ 🔺 ] Sleep Obfuscation. 
+* [ 🔺 ] Function Stomping.
 ## Reporting Bugs or Issues
 
 If you encounter any bugs or issues while using ZigStrike, please report them by opening an issue in the [Issues](https://github.com/0xsp-SRD/ZigStrike/issues) section of this repository. When reporting, please include detailed information about the problem, steps to reproduce it, and any relevant logs or screenshots. This will help us address the issue more efficiently.
