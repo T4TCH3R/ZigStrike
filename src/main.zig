@@ -66,7 +66,7 @@ pub const ThreadProc = fn (param: ?LPVOID) callconv(.Win64) DWORD;
 
 // convert the string to a wide string UTF16-L in comptime
 fn ComptimeWS(comptime str: []const u8) []const u16 {
-    @setEvalBranchQuota(100_000);
+    @setEvalBranchQuota(100_000_000);
     comptime {
         var wide_str = std.unicode.utf8ToUtf16LeStringLiteral(str);
         _ = &wide_str; // ignore
