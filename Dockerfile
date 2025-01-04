@@ -8,7 +8,9 @@ COPY App /zigstrike/App
 COPY src /zigstrike/src
 COPY build.zig /zigstrike/build.zig
 
-RUN pip install flask 
+
+RUN pip install flask==2.2.3
+RUN pip install Werkzeug==2.2.2
 
 RUN apt-get update && \
     apt-get install -y wget xz-utils && \
