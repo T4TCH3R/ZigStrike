@@ -5,6 +5,14 @@
 
 ZigStrike is a robust shellcode loader developed in Zig, offering a variety of injection techniques and anti-sandbox features. It leverages compile-time capabilities for efficient shellcode allocation, demonstrating proven success in [bypassing advanced security solutions](https://kpmg.com/nl/en/home/insights/2024/12/zig-strike-the-ultimate-toolkit-for-payload-creation-and-evasion.html). ZigStrike includes a custom payload builder, allowing users to easily select and construct payloads via a web application built with Python.
 
+
+## Known issues 
+
+* compiling issue when dealing with large shellcode [FIXED] 
+* flask could not handle large POST request [FIXED]
+* notification popup is not accurate [FIXED]
+* Rundll32 is not supported [TBD- due to quick detection]
+
 ## Features
 
 - **Multiple Injection Techniques**:
