@@ -8,6 +8,7 @@ import math
 app = Flask(__name__, 
     static_url_path='/static',
     static_folder='static')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # this will resolve the issue with docker env to handle large POST requests. 
 
 def split_base64_string(encoded_content, num_parts=15):
     """Split base64 string into equal parts"""
