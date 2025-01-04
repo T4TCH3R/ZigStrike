@@ -404,7 +404,7 @@ button[type="submit"]:disabled {
             <label>Select injection method:</label>
             <div class="radio-button-group">
                 <input type="radio" id="hijack_thread" name="injection_method" value="hijack_thread">
-                <label for="hijack_thread" data-tooltip="This technique involves hijacking a created thread, redirecting the payload execution into a dummy function and executing the payload once the thread is resumed. This option also performs function stomping through the dummy function callback which stands for loading specific windows API and stomp it’s function address.">Local Thread</label>
+                <label for="hijack_thread" data-tooltip="Hijack Thread: This technique involves taking control of an existing thread within the target process. It redirects the thread's execution to the injected shellcode. This method is stealthy as it doesn't create new threads, potentially evading some detection mechanisms. However, it may impact the stability of the hijacked thread's original function.">Local Thread</label>
                 
                 <input type="radio" id="local_mapping" name="injection_method" value="local_mapping">
                 <label for="local_mapping" data-tooltip=" 1.Create Mapped Section in Target Process.&#10;
@@ -416,7 +416,7 @@ button[type="submit"]:disabled {
                 3. Execute the shellcode in the new process.">Remote Mapping</label>
                 <input type="radio" id="remote_thread" name="injection_method" value="remote_thread">
                 <label for="remote_thread" data-tooltip="1. Create a new process in the target machine.&#10;
-                2. Hijack a thread in the new process.&#10;
+                2. Create a new thread in the new process.&#10;
                 3. Redirect the thread's execution to the shellcode.">Remote Thread</label>
             </div>
             
@@ -462,14 +462,14 @@ button[type="submit"]:disabled {
     </div>
    
 
-    <div id="notification">Compiling...</div>
+    <div id="notification">Compiling...it could take a while depending on the size of the shellcode</div>
 
     <footer>
         <div class="social-icons">
             <a href="https://x.com/zux0x3a" target="_blank" data-tooltip="Follow me on X">
                 <i class="fab fa-twitter"></i>
             </a>
-            <a href="https://www.buymeacoffee.com/zux0x3a" target="_blank" title="Support my work">
+            <a href="https://www.buymeacoffee.com/your_profile" target="_blank" title="Support my work">
                 <i class="fas fa-mug-hot"></i>
             </a>
         </div>
@@ -490,7 +490,7 @@ function validateContent(content) {
         return foundChars;
     }
 
-    // Add this event listener for real-time validation
+  
     document.querySelector('textarea[name="content"]').addEventListener('input', function() {
         const invalidChars = validateContent(this.value);
         
@@ -521,7 +521,7 @@ function validateContent(content) {
         }
     });
 
-    // Modify your existing form submit handler to include validation
+   
     document.getElementById('compileForm').addEventListener('submit', function(e) {
         const content = this.querySelector('textarea[name="content"]').value;
         const invalidChars = validateContent(content);
@@ -536,7 +536,7 @@ function validateContent(content) {
             return;
         }
 
-        // ... rest of your existing submit handler code ...
+     
     });
 
 
@@ -620,21 +620,30 @@ function validateContent(content) {
                 }
                 document.querySelector('textarea[name="content"]').value = hexString;
                 
-                // Show success notification
+                // Show temporary conversion notification
                 const notification = document.getElementById('notification');
                 notification.style.backgroundColor = '#00ff00';
                 notification.textContent = 'Shellcode converted successfully!';
                 notification.style.display = 'block';
                 notification.style.opacity = '1';
+                
+                // Hide notification after a shorter delay (1 second)
                 setTimeout(() => {
                     notification.style.opacity = '0';
-                    setTimeout(() => { notification.style.display = 'none'; }, 500);
-                }, 2000);
+                    setTimeout(() => { 
+                        notification.style.display = 'none';
+                       
+                        notification.innerHTML = `
+                            <div id="notification-text">Compiling...it could take a while depending on the size of the shellcode</div>
+                            <div id="notification-progress"></div>
+                        `;
+                    }, 500);
+                }, 1000);
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Toggle format button handler
+        
         document.getElementById('toggleFormat').addEventListener('click', function() {
             let textarea = document.querySelector('textarea[name="content"]');
             let content = textarea.value;
@@ -662,19 +671,19 @@ function validateContent(content) {
             }
         });
 
-        // Upload button handler
+       
         document.getElementById('uploadShellcode').addEventListener('click', function() {
             document.getElementById('shellcodeFile').click();
         });
 
-        // File input handler
+   
         document.getElementById('shellcodeFile').addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
                 handleRawShellcodeFile(e.target.files[0]);
             }
         });
 
-        // Add drag and drop support to textarea
+       
         const textarea = document.querySelector('textarea[name="content"]');
         textarea.addEventListener('dragover', function(e) {
             e.preventDefault();
