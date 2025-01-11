@@ -543,6 +543,22 @@ function validateContent(content) {
         document.getElementById('compileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            const enableProtection = document.getElementById('enable_protection');
+            const protectionFeatures = document.querySelectorAll('input[name="protection_features"]:checked');
+            
+            // Validate sandbox protection
+            if (!enableProtection.checked || protectionFeatures.length === 0) {
+                const notification = document.getElementById('notification');
+                notification.style.backgroundColor = '#ff0000';
+                notification.textContent = 'Please enable sandbox protection and select at least one option';
+                notification.style.display = 'block';
+                notification.style.opacity = '1';
+                return false;
+            }
+            
+            // Proceed with form submission if validation passes
+            const formData = new FormData(this);
+            
             // Show notification
             var notification = document.getElementById('notification');
             notification.style.display = 'block';
@@ -551,11 +567,17 @@ function validateContent(content) {
             // Send AJAX request
             fetch('/', {
                 method: 'POST',
-                body: new FormData(this)
+                headers: {
+                    'Accept': 'application/x-msdownload',
+                },
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Compilation failed');
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Compilation failed');
+                    });
                 }
                 return response.blob();
             })
@@ -575,7 +597,7 @@ function validateContent(content) {
             })
             .catch(error => {
                 console.error('Error:', error);
-                notification.textContent = 'Compilation failed';
+                notification.textContent = error.message || 'Compilation failed';
                 notification.style.backgroundColor = '#ff0000';
                 setTimeout(() => { 
                     notification.style.opacity = '0';
